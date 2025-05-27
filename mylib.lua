@@ -2125,51 +2125,81 @@ function DiscordLib:Window(text)
 				ChannelHolder.Visible = true
 			end
 			local ChannelContent = {}
-			function ChannelContent:Button(text,callback)
-				local Button = Instance.new("TextButton")
-				local ButtonCorner = Instance.new("UICorner")
+			function ChannelContent:Button(text, callback)
+    local Button = Instance.new("TextButton")
+    local ButtonCorner = Instance.new("UICorner")
 
-				Button.Name = "Button"
-				Button.Parent = ChannelHolder
-				Button.BackgroundColor3 = Color3.fromRGB(114, 137, 228)
-				Button.Size = UDim2.new(0, 401, 0, 30)
-				Button.AutoButtonColor = false
-				Button.Font = Enum.Font.Gotham
-				Button.TextColor3 = Color3.fromRGB(255, 255, 255)
-				Button.TextSize = 14.000
-				Button.Text = text
+    Button.Name = "Button"
+    Button.Parent = ChannelHolder
+    Button.BackgroundColor3 = Color3.fromRGB(114, 137, 228)
+    Button.Size = UDim2.new(0, 401, 0, 30)
+    Button.AutoButtonColor = false
+    Button.Font = Enum.Font.Gotham
+    Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Button.TextSize = 14.000
+    Button.Text = text
 
-				ButtonCorner.CornerRadius = UDim.new(0, 4)
-				ButtonCorner.Name = "ButtonCorner"
-				ButtonCorner.Parent = Button
-				
-				Button.MouseEnter:Connect(function()
-					TweenService:Create(
-						Button,
-						TweenInfo.new(.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-						{BackgroundColor3 = Color3.fromRGB(103,123,196)}
-					):Play()
-				end)
-				
-				Button.MouseButton1Click:Connect(function()
-					pcall(callback)
-					Button.TextSize = 0
-					TweenService:Create(
-						Button,
-						TweenInfo.new(.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-						{TextSize = 14}
-					):Play()
-				end)
-				
-				Button.MouseLeave:Connect(function()
-					TweenService:Create(
-						Button,
-						TweenInfo.new(.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-						{BackgroundColor3 = Color3.fromRGB(114, 137, 228)}
-					):Play()
-				end)
-				ChannelHolder.CanvasSize = UDim2.new(0,0,0,ChannelHolderLayout.AbsoluteContentSize.Y)
-			end
+    ButtonCorner.CornerRadius = UDim.new(0, 4)
+    ButtonCorner.Name = "ButtonCorner"
+    ButtonCorner.Parent = Button
+    
+    -- Создаем кружок для анимации нажатия
+    local Ripple = Instance.new("Frame")
+    Ripple.Name = "Ripple"
+    Ripple.Parent = Button
+    Ripple.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Ripple.BackgroundTransparency = 0.8
+    Ripple.Size = UDim2.new(0, 0, 0, 0)
+    Ripple.Position = UDim2.new(0.5, 0, 0.5, 0)
+    Ripple.AnchorPoint = Vector2.new(0.5, 0.5)
+    
+    local RippleCorner = Instance.new("UICorner")
+    RippleCorner.CornerRadius = UDim.new(1, 0)
+    RippleCorner.Parent = Ripple
+    
+    Button.MouseEnter:Connect(function()
+        TweenService:Create(
+            Button,
+            TweenInfo.new(.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+            {BackgroundColor3 = Color3.fromRGB(103,123,196)}
+        ):Play()
+    end)
+    
+    Button.MouseButton1Click:Connect(function()
+        -- Анимация кружка при нажатии
+        Ripple.Size = UDim2.new(0, 0, 0, 0)
+        Ripple.Position = UDim2.new(0.5, 0, 0.5, 0)
+        Ripple.BackgroundTransparency = 0.8
+        
+        local MousePos = game:GetService("UserInputService"):GetMouseLocation()
+        local ButtonPos = Button.AbsolutePosition
+        local RelativePos = Vector2.new(MousePos.X - ButtonPos.X, MousePos.Y - ButtonPos.Y)
+        
+        Ripple.Position = UDim2.new(0, RelativePos.X, 0, RelativePos.Y)
+        
+        TweenService:Create(
+            Ripple,
+            TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+            {
+                Size = UDim2.new(2, 0, 2, 0),
+                BackgroundTransparency = 1,
+                Position = UDim2.new(0.5, -Ripple.AbsoluteSize.X/2, 0.5, -Ripple.AbsoluteSize.Y/2)
+            }
+        ):Play()
+        
+        pcall(callback)
+    end)
+    
+    Button.MouseLeave:Connect(function()
+        TweenService:Create(
+            Button,
+            TweenInfo.new(.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+            {BackgroundColor3 = Color3.fromRGB(114, 137, 228)}
+        ):Play()
+    end)
+    
+    ChannelHolder.CanvasSize = UDim2.new(0,0,0,ChannelHolderLayout.AbsoluteContentSize.Y)
+end
 			function ChannelContent:Toggle(text,default,callback)
 				local toggled = false
 				local Toggle = Instance.new("TextButton")
